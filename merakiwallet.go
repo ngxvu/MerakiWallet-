@@ -84,12 +84,24 @@ func promptoptions(w wallet) {
 		fmt.Println("Token Added -", tokenname, "$", amount)
 		promptoptions(w)
 	case "P":
-		fmt.Println("You Chose Save & Exit")
+		w.save()
+		fmt.Println("Your File Was Saved.", w.WalletName)
 	default:
 		fmt.Println("That Was Not A Valid Option. Let's Choose Again!")
 		promptoptions(w)
 	}
 }
+
+// save the wallet
+func (w *wallet) save() {
+	date := []byte(w.format())
+	err := os.WriteFile("Merakiwallet/"+w.WalletName+".txt", date, 0666)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Bill was saved to file")
+}
+
 func main() {
 	Mywallet := createWallet()
 	promptoptions(Mywallet)
