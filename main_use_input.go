@@ -85,9 +85,7 @@ func generateAdrress() {
 func getInput(prompt string, r *bufio.Reader) (string, error) {
 	fmt.Println(prompt)
 	input, err := r.ReadString('\n')
-
 	return strings.TrimSpace(input), err
-
 }
 
 func createWallet() wallet {
@@ -106,13 +104,36 @@ func createWallet() wallet {
 	name, _ := getInput("Create A Wallet Name: ", reader)
 	email, _ := getInput("Your Email: ", reader)
 	address, _ := fmt.Println("Your Wallet Address Is:", generateAdrress)
-
 	w := newWallet(name, email, string(address))
 	fmt.Println("Created the wallet -", w.name, w.email, w.address, w.currentTime)
 
 	return w
 }
+
+func promptOptions(w wallet) {
+	reader := bufio.NewReader(os.Stdin)
+	opt, _ := getInput("Choose Your Option ( a - Create your wallet | b - Sign In To Your Wallet | c - Search A Wallet By Adrress  | d - Exit ): ", reader)
+
+	switch opt {
+	case "a":
+		fmt.Println("You Chose a - Create A Wallet.")
+	case "b":
+		fmt.Println("You Chose b - Sign In To Your Wallet.")
+	case "c":
+		fmt.Println("You Chose c - Search A Wallet By Address.")
+	case "d":
+		fmt.Println("You Chose d - Exit.")
+	default:
+		fmt.Println("That's Not A Valid Option.")
+		promptOptions(w)
+	}
+}
 func main() {
+	fmt.Println("WELCOME TO CHAIN MERAKI")
+	fmt.Println("=======================")
+
 	mywallet := createWallet()
 	fmt.Println(mywallet)
+	promptOptions(mywallet)
+
 }
