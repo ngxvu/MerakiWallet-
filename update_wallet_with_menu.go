@@ -48,8 +48,8 @@ type wallet struct {
 	name        string
 	email       string
 	address     string
-	currentTime time.Time
 	tokens      map[string]float64 //token: Symbol(string) - balance(float64)
+	currentTime time.Time
 }
 
 func newWallet(name, email, address string) wallet {
@@ -57,8 +57,8 @@ func newWallet(name, email, address string) wallet {
 		name:        name,
 		email:       email,
 		address:     address,
-		currentTime: time.Now(),
 		tokens:      map[string]float64{},
+		currentTime: time.Now(),
 	}
 	return w
 }
@@ -91,13 +91,11 @@ func createWallet() wallet {
 	name, _ := getInput("- Create A Wallet Name: ", reader)
 	email, _ := getInput("- Your Email: ", reader)
 	address, _ := fmt.Println("- Your Wallet Address Is: ", generateAdrress)
-	//tokens, _ := fmt.Println("- Input Your Token:", /* function input Tokens*/)
 	w := newWallet(name, email, string(address))
-	w.addTokens("NEAR", 700)
-	w.addTokens("CLV", 500)
-	w.addTokens("AXS", 900)
+	w.addTheTokens("ADA", 500)
+	w.addTheTokens("NEAR", 700)
+	w.addTheTokens("AXS", 900)
 	fmt.Println("Wallet Created: \n", "*** Wallet Name: ", w.name, "\n", "*** Wallet Email: ", w.email, "\n", "*** Wallet Address :", generateAdrress, "\n", w.format(), "\n", "*** Time Created :", w.currentTime)
-
 	return w
 }
 
@@ -115,17 +113,11 @@ func (w *wallet) format() string {
 	return fs
 }
 
-// add tokens
-func (w *wallet) addTokens(token string, balance float64) {
+// addthetokens
+
+func (w *wallet) addTheTokens(token string, balance float64) {
+	fmt.Println("- Add Your Token: ")
 	w.tokens[token] = balance
-}
-
-// addTokensPrompt
-
-func TokensPrompt() {
-	reader := bufio.NewReader(os.Stdin)
-	opt, _ := getInput("Input Your Token", reader)
-
 }
 
 func main() {
