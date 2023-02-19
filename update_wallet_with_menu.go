@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -92,9 +93,7 @@ func createWallet() wallet {
 	email, _ := getInput("- Your Email: ", reader)
 	address, _ := fmt.Println("- Your Wallet Address Is: ", generateAdrress)
 	w := newWallet(name, email, string(address))
-	w.addTheTokens("ADA", 500)
-	w.addTheTokens("NEAR", 700)
-	w.addTheTokens("AXS", 900)
+	tokensPrompt(w)
 	fmt.Println("Wallet Created: \n", "*** Wallet Name: ", w.name, "\n", "*** Wallet Email: ", w.email, "\n", "*** Wallet Address :", generateAdrress, "\n", w.format(), "\n", "*** Time Created :", w.currentTime)
 	return w
 }
@@ -116,8 +115,38 @@ func (w *wallet) format() string {
 // addthetokens
 
 func (w *wallet) addTheTokens(token string, balance float64) {
-	fmt.Println("- Add Your Token: ")
 	w.tokens[token] = balance
+}
+
+func tokensPrompt(w wallet) {
+	fmt.Println(" \n Choose Your Option  ")
+	reader := bufio.NewReader(os.Stdin)
+	opt, _ := getInput("a - Add Your Tokens \nb - Save & Return To The Main Menu \n", reader)
+	switch opt {
+	case "a":
+		token, _ := getInput("Token name:", reader)
+		balance, _ := getInput("Token Balance ($): ", reader)
+		b, err := strconv.ParseFloat(balance, 64)
+		if err != nil {
+			fmt.Println("The balance must be a number")
+			tokensPrompt(w)
+		}
+		w.addTheTokens(token, b)
+		fmt.Println("Token added: ", token, "- $"+balance)
+		tokensPrompt(w)
+	case "b":
+		fmt.Println("You Chose To Save The Wallet.")
+		fmt.Println(".............................")
+		fmt.Println("Returning To The Main Menu ")
+		promptOptions()
+	default:
+		fmt.Println("That's Not A Valid Option.")
+		fmt.Println("Please Select A Valid Options")
+		fmt.Println(".............................")
+		tokensPrompt(w)
+	}
+
+	fmt.Println(opt)
 }
 
 func main() {
