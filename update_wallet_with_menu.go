@@ -10,7 +10,7 @@ import (
 )
 
 func welcome() {
-	fmt.Println("WELCOME TO CHAIN MERAKI")
+	fmt.Println("WELCOME_TO_CHAIN_MERAKI")
 	fmt.Println("=======================")
 	fmt.Println("  Choose Your Option  ")
 }
@@ -63,17 +63,6 @@ func newWallet(name, email, address string) wallet {
 	return w
 }
 
-func createWallet() wallet {
-	reader := bufio.NewReader(os.Stdin)
-	name, _ := getInput("Create A Wallet Name: ", reader)
-	email, _ := getInput("Your Email: ", reader)
-	address, _ := fmt.Println("Your Wallet Address Is:", generateAdrress)
-	w := newWallet(name, email, string(address))
-	fmt.Println("Created the wallet -", w.name, w.email, w.address, w.currentTime)
-
-	return w
-}
-
 func generateAdrress() {
 	rand.Seed(time.Now().UnixNano())
 	digits := "0123456789"
@@ -96,7 +85,51 @@ func generateAdrress() {
 	fmt.Println(str)
 }
 
+func createWallet() wallet {
+	reader := bufio.NewReader(os.Stdin)
+
+	name, _ := getInput("- Create A Wallet Name: ", reader)
+	email, _ := getInput("- Your Email: ", reader)
+	address, _ := fmt.Println("- Your Wallet Address Is: ", generateAdrress)
+	//tokens, _ := fmt.Println("- Input Your Token:", /* function input Tokens*/)
+	w := newWallet(name, email, string(address))
+	w.addTokens("NEAR", 700)
+	w.addTokens("CLV", 500)
+	w.addTokens("AXS", 900)
+	fmt.Println("Wallet Created: \n", "*** Wallet Name: ", w.name, "\n", "*** Wallet Email: ", w.email, "\n", "*** Wallet Address :", generateAdrress, "\n", w.format(), "\n", "*** Time Created :", w.currentTime)
+
+	return w
+}
+
+// format the wallet
+func (w *wallet) format() string {
+	fs := "*** Wallet Portfolio: \n"
+	var total float64 = 0
+	for k, v := range w.tokens {
+		fs += fmt.Sprintf("%-25v ...$%v \n", k+":", v)
+		total += v
+	}
+	// total
+	fs += fmt.Sprintf("%-25v ...$%0.2f", "total:", total)
+
+	return fs
+}
+
+// add tokens
+func (w *wallet) addTokens(token string, balance float64) {
+	w.tokens[token] = balance
+}
+
+// addTokensPrompt
+
+func TokensPrompt() {
+	reader := bufio.NewReader(os.Stdin)
+	opt, _ := getInput("Input Your Token", reader)
+
+}
+
 func main() {
 	welcome()
 	promptOptions()
+
 }

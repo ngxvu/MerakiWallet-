@@ -55,7 +55,6 @@ func (w *wallet) updateNameEmailAddress(name, email string) {
 }
 
 // update tokens
-
 func (w *wallet) addTokens(token string, balance float64) {
 	w.tokens[token] = balance
 }
