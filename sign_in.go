@@ -45,24 +45,25 @@ func OptPromptSignIn() {
 	}
 }
 
+// Khai bao struct
+
 type User struct {
 	email   string   `json:"email"`
 	wallets []Wallet `json:"wallets"`
 }
 
 type Wallet struct {
-	address string             `json:"address"`
-	tokens  map[string]float64 `json:"tokens"`
+	address string  `json:"address"`
+	tokens  []Token `json:"tokens"`
 }
-
-var listUser []User
-var listWallet []Wallet
+type Token struct {
+	symbol  string
+	balance float64
+}
 
 func SignIn() {
 	reader := bufio.NewReader(os.Stdin)
 	email, _ := getInput("Hãy Nhập Email Có Liên Kết Với MerakiChain.", reader)
-	w := newWallet()
-	tokensPrompt(w)
 	if !validFormEmail(email) {
 		fmt.Println("Sai Định Dạng Email - Hãy Nhập Lại.")
 		SignIn()
@@ -119,7 +120,7 @@ func YouChoseCreateAccount() {
 
 func OptPromptSignUp() {
 	reader := bufio.NewReader(os.Stdin)
-	opt, _ := getInput("Lựa Chọn Chức Năng Ví.\n   1 - Tạo Tài Khoản.\n   2 - Đăng Nhập Tài Khoản.\n   3 - Thoát Chương Trình.", reader)
+	opt, _ := getInput("\nLựa Chọn Chức Năng Ví.\n   1 - Tạo Tài Khoản.\n   2 - Đăng Nhập Tài Khoản.\n   3 - Thoát Chương Trình.", reader)
 	switch opt {
 	case "1":
 		YouChoseCreateAccount()
@@ -135,12 +136,48 @@ func OptPromptSignUp() {
 	}
 }
 
+var listToken []Token
+var listUser []User
+var listWallet []Wallet
+
 func SignUp() {
+
 	reader := bufio.NewReader(os.Stdin)
 	email, _ := getInput(">> Hãy Nhập Email Chưa Được Liên Kết Với MerakiChain. <<", reader)
-	address := uuid.NewString()
-	w := newWallet()
-	tokensPrompt(w)
+	//checkDinhdangEmailvaEmailExist
+	if !validFormEmail(email) {
+		fmt.Println("Sai Định Dạng Email - Hãy Nhập Lại.")
+		SignUp()
+	} else if checkEmailExist(email, listUser) {
+		fmt.Println("\n** Tài Khoản Của Bạn Đã Tạo Thành Công. **")
+	} else {
+		fmt.Println("Tài Khoản Này Đã Được Tạo Rồi. Hãy Đăng Nhập.")
+		OptPromptSignUp()
+	}
+
+	//addtheToken
+	for {
+		TokenOpt, _ := getInput("Chọn Options Của Bạn\n  1 - Nhập Token\n  2 - Thoát Và Quay Về Menu Chính", reader)
+		switch TokenOpt {
+		case "1":
+			symbol, _ := getInput("Nhập Tên Token: ", reader)
+			balance, _ := getInput("Nhập Số Dư: ", reader)
+			b, err := strconv.ParseFloat(balance, 64)
+			if err != nil {
+				fmt.Println("Số Dư Phải Nhập Dạng Số")
+			}
+			listToken = append(listToken, Token{
+				symbol:  symbol,
+				balance: b,
+			})
+		case "2":
+			fmt.Println("Bạn Chọn Thoát Và Quay Về Menu Chính")
+		}
+		if TokenOpt == "2" {
+			break
+		}
+	}
+
 	//symbol, _ := getInput("Token Name: ", reader)
 	//balance, _ := getInput("Token Balance($): ", reader)
 	//b, err := strconv.ParseFloat(balance, 64)
@@ -148,70 +185,22 @@ func SignUp() {
 	//	fmt.Println("The balance must be a number")
 	//}
 
-	if !validFormEmail(email) {
-		fmt.Println("Sai Định Dạng Email - Hãy Nhập Lại.")
-		SignUp()
-	} else if checkEmailExist(email, listUser) {
-		fmt.Println("\n** Tài Khoản Của Bạn Đã Tạo Thành Công. **")
-		if checkAddressExist(address, listWallet) {
-			fmt.Println("Địa Chỉ Ví Của Bạn Là: ", address)
-		}
-		listUser = append(listUser, User{
-			email: email,
-			wallets: []Wallet{
-				{
-					address: address,
-					tokens:  nil,
-				},
+	//autoGenerateAddress&CheckAddressUnique
+	address := uuid.NewString()
+	if checkAddressExist(address, listWallet) {
+		fmt.Println("Địa Chỉ Ví Của Bạn Là: ", address)
+	}
+
+	listUser = append(listUser, User{
+		email: email,
+		wallets: []Wallet{
+			{
+				address: address,
+				tokens:  listToken,
 			},
 		},
-		)
-		fmt.Print(listUser)
-		OptPromptSignIn()
+	},
+	)
+	fmt.Println(listUser)
 
-	} else {
-		fmt.Println("Tài Khoản Này Đã Được Tạo Rồi. Hãy Đăng Nhập.")
-		OptPromptSignUp()
-	}
-}
-
-func (tk *Wallet) addTheTokens(symbol string, balance float64) {
-	tk.tokens[symbol] = balance
-}
-
-func tokensPrompt(tk Wallet) {
-	fmt.Println(" \n Choose Your Option  ")
-	reader := bufio.NewReader(os.Stdin)
-	opt, _ := getInput("a - Add Your Tokens \nb - Save & Return To The Main Menu \n", reader)
-	switch opt {
-	case "a":
-		symbol, _ := getInput("Symbol name:", reader)
-		balance, _ := getInput("Token Balance ($): ", reader)
-		b, err := strconv.ParseFloat(balance, 64)
-		if err != nil {
-			fmt.Println("The balance must be a number")
-			tokensPrompt(tk)
-		}
-		tk.addTheTokens(symbol, b)
-		fmt.Println("Token added: ", symbol, "- $"+balance)
-		tokensPrompt(tk)
-	case "b":
-		fmt.Println("File's name: \n")
-		fmt.Println(".............................")
-		fmt.Println("Returning To The Main Menu ")
-	default:
-		fmt.Println("That's Not A Valid Option.")
-		fmt.Println("Please Select A Valid Options")
-		fmt.Println(".............................")
-		tokensPrompt(tk)
-	}
-
-	fmt.Println(opt)
-}
-
-func newWallet() Wallet {
-	w := Wallet{
-		tokens: map[string]float64{},
-	}
-	return w
 }
