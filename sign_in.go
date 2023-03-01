@@ -10,16 +10,22 @@ import (
 	"strings"
 )
 
+// ----------------- func main ----------------------
+
 func main() {
 
 	Welcome()
-	OptPromptSignIn()
+	OptPromptSignUp()
 }
+
+// ----------------- func welcome ----------------------
 
 func Welcome() {
 	fmt.Println("Welcome To Meraki Chain")
 	fmt.Println("=======================")
 }
+
+// ----------------- func getInput ----------------------
 
 func getInput(prompt string, r *bufio.Reader) (string, error) {
 	fmt.Println(prompt)
@@ -27,25 +33,7 @@ func getInput(prompt string, r *bufio.Reader) (string, error) {
 	return strings.TrimSpace(input), err
 }
 
-func OptPromptSignIn() {
-	reader := bufio.NewReader(os.Stdin)
-	mainOpt, _ := getInput("Lựa Chọn Chức Năng Ví.\n   1 - Tạo Tài Khoản.\n   2 - Đăng Nhập Tài Khoản.\n   3 - Thoát Chương Trình.", reader)
-	switch mainOpt {
-	case "1":
-		fmt.Println("Bạn Chọn Đăng Kí Tài Khoản.")
-		SignUp()
-	case "2":
-		fmt.Println("Bạn Chọn Đăng Nhập Vào Tài Khoản Hiện Có.")
-		SignIn()
-	case "3":
-		fmt.Println("Chương Trình Đang Thoát.")
-	default:
-		fmt.Println("Lựa chọn đó không có - Hãy Chọn Lại.\n")
-		OptPromptSignIn()
-	}
-}
-
-// Khai bao struct
+// ----------------- khai báo Struct ----------------------
 
 type User struct {
 	email   string   `json:"email"`
@@ -57,76 +45,39 @@ type Wallet struct {
 	tokens  []Token `json:"tokens"`
 }
 type Token struct {
-	symbol  string
-	balance float64
+	symbol  string  `json:"Symbol"`
+	balance float64 `json:"Balance"`
 }
 
-func SignIn() {
-	reader := bufio.NewReader(os.Stdin)
-	email, _ := getInput("Hãy Nhập Email Có Liên Kết Với MerakiChain.", reader)
-	if !validFormEmail(email) {
-		fmt.Println("Sai Định Dạng Email - Hãy Nhập Lại.")
-		SignIn()
-	} else if !checkEmailExist(email, listUser) {
-		fmt.Println("Sửa Wallet")
-	} else {
-		fmt.Println("\nEmail Không Có Trong Hệ Thống, Hãy Tạo Tài Khoản Mới !")
-		OptPromptSignUp()
-	}
-}
+// ----------------- SignIn ----------------------
 
-// check form email
-func validFormEmail(email string) bool {
-	_, err := mail.ParseAddress(email)
-	return err == nil
-}
+//func SignIn() {
+//	reader := bufio.NewReader(os.Stdin)
+//	email, _ := getInput("Hãy Nhập Email Có Liên Kết Với MerakiChain.", reader)
+//	if !validFormEmail(email) {
+//		fmt.Println("Sai Định Dạng Email - Hãy Nhập Lại.")
+//		SignIn()
+//	} else if !checkEmailExist(email, listUser) {
+//		fmt.Println("Sửa Wallet")
+//	} else {
+//		fmt.Println("\nEmail Không Có Trong Hệ Thống, Hãy Tạo Tài Khoản Mới !")
+//		OptPromptSignUp()
+//	}
+//}
 
-func checkEmailExist(email string, listUsers []User) bool {
-	for _, user := range listUsers {
-		if email == user.email {
-			return false
-		}
-	}
-	return true
-}
-
-func checkAddressExist(address string, listWallet []Wallet) bool {
-	for _, wallet := range listWallet {
-		if address == wallet.address {
-			return false
-		}
-	}
-	return true
-}
-
-func YouChoseCreateAccount() {
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Println("Bạn Chọn Tạo Tài Khoản ")
-	optcase1, _ := getInput(" 1 - Tiếp Tục Tạo Tài Khoản \n 2 - Quay Lại Menu Chương Trình ", reader)
-	switch optcase1 {
-	case "1":
-		fmt.Println("Bạn Chọn 1 - Hãy Nhập Email Của Bạn")
-		SignUp()
-	case "2":
-		fmt.Println("Bạn Chọn 2 - Quay Lại Menu Chương Trình")
-		OptPromptSignUp()
-	default:
-		fmt.Println("Lựa chọn đó không có - Hãy Chọn Lại.\n")
-		fmt.Println(".............................")
-		YouChoseCreateAccount()
-	}
-
-}
+// ----------------- SignUpMenu ----------------------
 
 func OptPromptSignUp() {
 	reader := bufio.NewReader(os.Stdin)
 	opt, _ := getInput("\nLựa Chọn Chức Năng Ví.\n   1 - Tạo Tài Khoản.\n   2 - Đăng Nhập Tài Khoản.\n   3 - Thoát Chương Trình.", reader)
 	switch opt {
+	case "0":
+		fmt.Println()
 	case "1":
-		YouChoseCreateAccount()
+		fmt.Println("Bạn Chọn Tạo Tài Khoản.")
+		SignUp()
 	case "2":
 		fmt.Println("Bạn Chọn Đăng Nhập Vào Tài Khoản Hiện Có.")
-		SignIn()
 	case "3":
 		fmt.Println("Chương Trình Đang Thoát.")
 	default:
@@ -136,71 +87,66 @@ func OptPromptSignUp() {
 	}
 }
 
-var listToken []Token
-var listUser []User
-var listWallet []Wallet
+// ----------------- SignUp ----------------------
 
 func SignUp() {
 
+	var listUser []User
 	reader := bufio.NewReader(os.Stdin)
 	email, _ := getInput(">> Hãy Nhập Email Chưa Được Liên Kết Với MerakiChain. <<", reader)
+
 	//checkDinhdangEmailvaEmailExist
+
 	if !validFormEmail(email) {
 		fmt.Println("Sai Định Dạng Email - Hãy Nhập Lại.")
 		SignUp()
-	} else if checkEmailExist(email, listUser) {
-		fmt.Println("\n** Tài Khoản Của Bạn Đã Tạo Thành Công. **")
-	} else {
+	}
+	if !checkEmailExist(email, listUser) {
 		fmt.Println("Tài Khoản Này Đã Được Tạo Rồi. Hãy Đăng Nhập.")
 		OptPromptSignUp()
 	}
 
-	//addtheToken
+	var listToken []Token
 	for {
-		TokenOpt, _ := getInput("Chọn Options Của Bạn\n  1 - Nhập Token\n  2 - Thoát Và Quay Về Menu Chính", reader)
-		switch TokenOpt {
-		case "1":
-			symbol, _ := getInput("Nhập Tên Token: ", reader)
-			balance, _ := getInput("Nhập Số Dư: ", reader)
+		tokenmenu, _ := getInput("1-Nhap Token\n2-Thoat", reader)
+		if tokenmenu == "1" {
+			symbol, _ := getInput("Nhap symbol:", reader)
+			balance, _ := getInput("Nhap balance:", reader)
 			b, err := strconv.ParseFloat(balance, 64)
 			if err != nil {
-				fmt.Println("Số Dư Phải Nhập Dạng Số")
+				fmt.Println("error")
 			}
-			listToken = append(listToken, Token{
-				symbol:  symbol,
-				balance: b,
-			})
-		case "2":
-			fmt.Println("Bạn Chọn Thoát Và Quay Về Menu Chính")
-		}
-		if TokenOpt == "2" {
+			listToken = append(listToken, Token{symbol: symbol, balance: b})
+		} else if tokenmenu == "2" {
+			fmt.Println("Thoat")
 			break
 		}
 	}
 
-	//symbol, _ := getInput("Token Name: ", reader)
-	//balance, _ := getInput("Token Balance($): ", reader)
-	//b, err := strconv.ParseFloat(balance, 64)
-	//if err != nil {
-	//	fmt.Println("The balance must be a number")
-	//}
-
-	//autoGenerateAddress&CheckAddressUnique
-	address := uuid.NewString()
-	if checkAddressExist(address, listWallet) {
-		fmt.Println("Địa Chỉ Ví Của Bạn Là: ", address)
+	var initWalelt = Wallet{
+		address: uuid.NewString(),
+		tokens:  listToken,
 	}
-
 	listUser = append(listUser, User{
-		email: email,
-		wallets: []Wallet{
-			{
-				address: address,
-				tokens:  listToken,
-			},
-		},
-	},
-	)
-	fmt.Println(listUser)
+		email:   email,
+		wallets: []Wallet{initWalelt},
+	})
 
+	fmt.Println(listUser)
+}
+
+// check form email
+func validFormEmail(email string) bool {
+	_, err := mail.ParseAddress(email)
+	return err == nil
+}
+
+// check email exist
+func checkEmailExist(email string, listUsers []User) bool {
+	for _, user := range listUsers {
+		if email == user.email {
+			return false
+		}
+	}
+	return true
 }
