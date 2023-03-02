@@ -14,8 +14,7 @@ import (
 
 func main() {
 	Welcome()
-	OptPromptSignUp()
-	fmt.Println(listUser)
+	MenuChinh()
 }
 
 // ----------------- func welcome ----------------------
@@ -52,21 +51,29 @@ var listUser []User
 
 // ----------------- SignUpMenu ----------------------
 
-func OptPromptSignUp() {
+func MenuChinh() {
 	reader := bufio.NewReader(os.Stdin)
-	opt, _ := getInput("\nLựa Chọn Chức Năng Ví.\n   1 - Tạo Tài Khoản.\n   2 - Đăng Nhập Tài Khoản.\n   3 - Thoát Chương Trình.", reader)
-	switch opt {
-	case "1":
-		fmt.Println("Bạn Chọn Tạo Tài Khoản.")
-		SignUp()
-	case "2":
-		fmt.Println("Bạn Chọn Đăng Nhập Vào Tài Khoản Hiện Có.")
-	case "3":
-		fmt.Println("Chương Trình Đang Thoát.")
-	default:
-		fmt.Println("Lựa chọn đó không có - Hãy Chọn Lại.")
-		fmt.Println(".............................")
-		OptPromptSignUp()
+	for {
+		opt, _ := getInput("\nLựa Chọn Chức Năng Ví.\n   0 - Xem list User\n   1 - Tạo Tài Khoản.\n   2 - Đăng Nhập Tài Khoản.\n   3 - Thoát Chương Trình.", reader)
+		switch opt {
+		case "0":
+			fmt.Println(listUser)
+		case "1":
+			fmt.Println("Bạn Chọn Tạo Tài Khoản.")
+			SignUp()
+			break
+		case "2":
+			fmt.Println("Bạn Chọn Đăng Nhập Vào Tài Khoản Hiện Có.")
+			SignIn()
+			break
+		case "3":
+			fmt.Println("Chương Trình Đang Thoát.")
+			break
+		default:
+			fmt.Println("Lựa chọn đó không có - Hãy Chọn Lại.")
+			fmt.Println(".............................")
+			MenuChinh()
+		}
 	}
 }
 
@@ -82,7 +89,7 @@ func SignUp() {
 		SignUp()
 	} else if !checkEmailExist(email, listUser) {
 		fmt.Println("Tài Khoản Này Đã Được Tạo Rồi. Hãy Đăng Nhập.")
-		return
+		MenuChinh()
 	}
 	var listToken []Token
 	for {
@@ -112,7 +119,7 @@ func SignUp() {
 		wallets: []Wallet{initWallet},
 	})
 	fmt.Println(listUser)
-	OptPromptSignUp()
+	MenuChinh()
 }
 
 // ----------------- CheckFormEmail ----------------------
@@ -129,4 +136,52 @@ func checkEmailExist(email string, listUsers []User) bool {
 		}
 	}
 	return true
+}
+
+// ----------------- SignIn ----------------------
+
+func SignIn() {
+	fmt.Println(listUser)
+	reader := bufio.NewReader(os.Stdin)
+	email, _ := getInput(">> Hãy Nhập Email Được Liên Kết Với MerakiChain. <<", reader)
+	if !validFormEmail(email) {
+		fmt.Println("Sai Định Dạng Email - Hãy Nhập Lại.")
+		SignIn()
+	}
+	for _, v := range listUser {
+		if email == v.email {
+			fmt.Println("Dang nhap thanh cong.")
+			MenuUser()
+			break
+		} else {
+			fmt.Println("Email chua co. Hay tao tai khoan")
+			MenuChinh()
+			break
+		}
+	}
+}
+
+func MenuUser() {
+	reader := bufio.NewReader(os.Stdin)
+	opt, _ := getInput("\nLựa Chọn Chức Năng.\n   1 - Tạo Thêm Wallet.\n   2 - Xoá Wallet.\n   3 - Sửa Tên Đăng Nhập.\n   4 - Thêm Token Cho Wallet.\n   5 - Xoá Token Của Wallet.\n   6 - Quay Về Menu Chính.", reader)
+	switch opt {
+	case "1":
+		fmt.Println("Bạn Chọn Tạo Thêm Wallet.")
+		SignUp()
+	case "2":
+		fmt.Println("Bạn Chọn Xoá Wallet.")
+		SignIn()
+	case "3":
+		fmt.Println("Bạn Chọn Sửa Tên Đăng Nhập.")
+	case "4":
+		fmt.Println("Bạn Chọn Thêm Token Cho Wallet.")
+	case "5":
+		fmt.Println("Bạn Chọn Xoá Token Của Wallet.")
+	case "6":
+		fmt.Println("Bạn Chọn Quay Về Menu Chính.")
+	default:
+		fmt.Println("Lựa chọn đó không có - Hãy Chọn Lại.")
+		fmt.Println(".............................")
+		MenuUser()
+	}
 }
