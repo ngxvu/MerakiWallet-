@@ -74,6 +74,7 @@ func MenuChinh() {
 			fmt.Println(".............................")
 			MenuChinh()
 		}
+		break
 	}
 }
 
@@ -148,40 +149,54 @@ func SignIn() {
 		fmt.Println("Sai Định Dạng Email - Hãy Nhập Lại.")
 		SignIn()
 	}
-	for _, v := range listUser {
-		if email == v.email {
+	isLogin := false
+	currentUserIndex := -1
+	for index, user := range listUser {
+		if email == user.email {
 			fmt.Println("Dang nhap thanh cong.")
+			currentUserIndex = index
+			fmt.Println("Index cua ban la", currentUserIndex)
+			isLogin = true
 			MenuUser()
 			break
-		} else {
-			fmt.Println("Email chua co. Hay tao tai khoan")
-			MenuChinh()
-			break
 		}
+	}
+	if isLogin == false {
+		fmt.Println("Dang nhap that bai vi tai khoan chua duoc khoi tao.\nHay tao tai khoan moi.")
+		return
 	}
 }
 
 func MenuUser() {
-	reader := bufio.NewReader(os.Stdin)
-	opt, _ := getInput("\nLựa Chọn Chức Năng.\n   1 - Tạo Thêm Wallet.\n   2 - Xoá Wallet.\n   3 - Sửa Tên Đăng Nhập.\n   4 - Thêm Token Cho Wallet.\n   5 - Xoá Token Của Wallet.\n   6 - Quay Về Menu Chính.", reader)
-	switch opt {
-	case "1":
-		fmt.Println("Bạn Chọn Tạo Thêm Wallet.")
-		SignUp()
-	case "2":
-		fmt.Println("Bạn Chọn Xoá Wallet.")
-		SignIn()
-	case "3":
-		fmt.Println("Bạn Chọn Sửa Tên Đăng Nhập.")
-	case "4":
-		fmt.Println("Bạn Chọn Thêm Token Cho Wallet.")
-	case "5":
-		fmt.Println("Bạn Chọn Xoá Token Của Wallet.")
-	case "6":
-		fmt.Println("Bạn Chọn Quay Về Menu Chính.")
-	default:
-		fmt.Println("Lựa chọn đó không có - Hãy Chọn Lại.")
-		fmt.Println(".............................")
-		MenuUser()
+	for {
+		reader := bufio.NewReader(os.Stdin)
+		opt, _ := getInput("\nLựa Chọn Chức Năng.\n   1 - Tạo Thêm Wallet.\n   2 - Xoá Wallet.\n   3 - Sửa Tên Đăng Nhập.\n   4 - Thêm Token Cho Wallet.\n   5 - Xoá Token Của Wallet.\n   6 - Quay Về Menu Chính.", reader)
+		switch opt {
+		case "1":
+			fmt.Println("Bạn Chọn Tạo Thêm Wallet.")
+			SignUp()
+		case "2":
+			fmt.Println("Bạn Chọn Xoá Wallet.")
+			SignIn()
+		case "3":
+			fmt.Println("Bạn Chọn Sửa Tên Đăng Nhập.")
+		case "4":
+			fmt.Println("Bạn Chọn Thêm Token Cho Wallet.")
+		case "5":
+			fmt.Println("Bạn Chọn Xoá Token Của Wallet.")
+		case "6":
+			fmt.Println("Bạn Chọn Quay Về Menu Chính.")
+			MenuChinh()
+			break
+		default:
+			fmt.Println("Lựa chọn đó không có - Hãy Chọn Lại.")
+			fmt.Println(".............................")
+			MenuUser()
+		}
+		break
 	}
 }
+
+//func TaothemWallet() {
+//
+//}
