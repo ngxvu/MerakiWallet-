@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
 	"net/mail"
@@ -54,10 +55,11 @@ var listUser []User
 func MenuChinh() {
 	reader := bufio.NewReader(os.Stdin)
 	for {
-		opt, _ := getInput("\nLựa Chọn Chức Năng Ví.\n   0 - Xem list User\n   1 - Tạo Tài Khoản.\n   2 - Đăng Nhập Tài Khoản.\n   3 - Thoát Chương Trình.", reader)
+		opt, _ := getInput("\nLựa Chọn Chức Năng Ví.\n   0 - Xem list User\n   1 - Tạo Tài Khoản.\n   2 - Đăng Nhập Tài Khoản.\n   3 - Lưu Và Thoát Chương Trình.", reader)
 		switch opt {
 		case "0":
 			fmt.Println(listUser)
+			continue
 		case "1":
 			fmt.Println("Bạn Chọn Tạo Tài Khoản.")
 			SignUp()
@@ -157,12 +159,14 @@ func SignIn() {
 			currentUserIndex = index
 			fmt.Println("Index cua ban la", currentUserIndex)
 			isLogin = true
+			ThongTinUser(user)
 			MenuUser()
 			break
 		}
 	}
 	if isLogin == false {
 		fmt.Println("Dang nhap that bai vi tai khoan chua duoc khoi tao.\nHay tao tai khoan moi.")
+		MenuChinh()
 		return
 	}
 }
@@ -174,12 +178,16 @@ func MenuUser() {
 		switch opt {
 		case "1":
 			fmt.Println("Bạn Chọn Tạo Thêm Wallet.")
-			SignUp()
+			addWallet()
+			break
 		case "2":
 			fmt.Println("Bạn Chọn Xoá Wallet.")
-			SignIn()
+			deleteWallet()
+			break
 		case "3":
-			fmt.Println("Bạn Chọn Sửa Tên Đăng Nhập.")
+			fmt.Println("Bạn Chọn Sửa Tên Email Đăng Nhập.")
+			changeEmail()
+			break
 		case "4":
 			fmt.Println("Bạn Chọn Thêm Token Cho Wallet.")
 		case "5":
@@ -197,6 +205,152 @@ func MenuUser() {
 	}
 }
 
-//func TaothemWallet() {
-//
-//}
+func ThongTinUser(user User) {
+	fmt.Println("Thong Tin User: ")
+	fmt.Println("- Email: ", user.email)
+	for _, wallet := range user.wallets {
+		fmt.Println("- Address: ", wallet.address)
+		for _, token := range wallet.tokens {
+			fmt.Println("  - Symbol: ", token.symbol)
+			fmt.Println("  - Balance: ", token.balance)
+		}
+	}
+}
+
+func addWallet() {
+	reader := bufio.NewReader(os.Stdin)
+	email, _ := getInput("Nhap lai email: ", reader)
+	if !validFormEmail(email) {
+		fmt.Println("Sai Định Dạng Email.")
+		addWallet()
+	}
+	isLogin := false
+	currentUserIndex := -1
+	for index, user := range listUser {
+		if email == user.email {
+			currentUserIndex = index
+			isLogin = true
+			break
+		}
+	}
+	if isLogin == false {
+		fmt.Println("Dang nhap that bai vi tai khoan chua duoc khoi tao.\nHay tao tai khoan moi.")
+		return
+	}
+
+	newWallet := Wallet{
+		address: uuid.NewString(),
+		tokens:  []Token{},
+	}
+	listUser[currentUserIndex].wallets = append(listUser[currentUserIndex].wallets, newWallet)
+	fmt.Println("bạn đã tạo ví mới thành công!")
+	ThongTinUser(listUser[currentUserIndex])
+	MenuUser()
+	return
+}
+
+func deleteWallet() {
+	reader := bufio.NewReader(os.Stdin)
+	email, _ := getInput("Nhap lai email: ", reader)
+	if !validFormEmail(email) {
+		fmt.Println("Sai Định Dạng Email.")
+		addWallet()
+	}
+	isLogin := false
+	currentUserIndex := -1
+	for index, user := range listUser {
+		if email == user.email {
+			currentUserIndex = index
+			isLogin = true
+			ThongTinUser(listUser[currentUserIndex])
+			break
+		}
+	}
+	if isLogin == false {
+		fmt.Println("Dang nhap that bai vi tai khoan chua duoc khoi tao.\nHay tao tai khoan moi.")
+		return
+	}
+	quest, _ := getInput("Ban muon xoa address nao?: ", reader)
+	isDetele := false
+	for i, wallet := range listUser[currentUserIndex].wallets {
+		if quest == wallet.address {
+			listUser[currentUserIndex].wallets = append(listUser[currentUserIndex].wallets[:i], listUser[currentUserIndex].wallets[i+1:]...)
+			isDetele = true
+			break
+		}
+		if !isDetele {
+			fmt.Println("Khong tim thay dia chi de xoa")
+			break
+		}
+	}
+	fmt.Println("Ban da xoa wallet: ", quest)
+	ThongTinUser(listUser[currentUserIndex])
+	MenuUser()
+	return
+}
+
+func changeEmail() {
+	reader := bufio.NewReader(os.Stdin)
+	email, _ := getInput("Nhap lai email: ", reader)
+	if !validFormEmail(email) {
+		fmt.Println("Sai Định Dạng Email.")
+		addWallet()
+	}
+	isLogin := false
+	currentUserIndex := -1
+	for index, user := range listUser {
+		if email == user.email {
+			currentUserIndex = index
+			isLogin = true
+			ThongTinUser(listUser[currentUserIndex])
+			break
+		}
+	}
+	if isLogin == false {
+		fmt.Println("Dang nhap that bai vi tai khoan chua duoc khoi tao.\nHay tao tai khoan moi.")
+		return
+	}
+	for {
+		quest, _ := getInput("Nhập tên Email mới của bạn: ", reader)
+		if !checkEmailExist(quest, listUser) {
+			fmt.Println("Tài Khoản Này Đã Được Tạo Rồi. Hãy Su Dung Email khac.")
+		} else {
+			listUser[currentUserIndex].email = quest
+			fmt.Println("Ban da doi email moi thanh: ", quest)
+			ThongTinUser(listUser[currentUserIndex])
+			break
+		}
+	}
+	MenuUser()
+	return
+}
+
+func read() ([]User, error) {
+
+	var listUser []User
+	dat, err := os.ReadFile("./data.json")
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(dat, &listUser)
+	if err != nil {
+		return nil, err
+	}
+
+	return listUser, nil
+}
+
+func save(data []User) error {
+	tmp, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+
+	err = os.WriteFile("./data.json", tmp, 0644)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
