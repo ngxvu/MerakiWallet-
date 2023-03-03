@@ -14,11 +14,17 @@ import (
 // ----------------- func main ----------------------
 
 func main() {
+
+	data, err := read()
+	if err != nil {
+		fmt.Println("Read file error!")
+		listUser = nil
+	}
+	listUser = data
+
 	Welcome()
 	MenuChinh()
 }
-
-var listUsers []User
 
 // ----------------- func welcome ----------------------
 
@@ -49,6 +55,8 @@ type Token struct {
 	symbol  string  `json:"Symbol"`
 	balance float64 `json:"Balance"`
 }
+
+var listUser []User
 
 // ----------------- MenuChinh ----------------------
 
@@ -197,6 +205,7 @@ func SignIn() {
 		if email == user.email {
 			fmt.Println("Đăng Nhập Thành Công.")
 			currentUserIndex = index
+			fmt.Println("Index của ban là: ", currentUserIndex)
 			isLogin = true
 			ThongTinUser(user)
 			MenuUser()
