@@ -14,14 +14,11 @@ import (
 // ----------------- func main ----------------------
 
 func main() {
-
-	data, err := read()
+	bs, err := os.ReadFile("meraki/data")
 	if err != nil {
-		fmt.Println("Read file error!")
-		listUser = nil
+		fmt.Println(err)
 	}
-	listUser = data
-
+	err = json.Unmarshal(bs, &listUser)
 	Welcome()
 	MenuChinh()
 }
@@ -77,14 +74,6 @@ func MenuChinh() {
 			SignIn()
 			break
 		case "3":
-			//fmt.Println("Lưu Thành Công ... Thoát Chương Trình.")
-			//err := save(listUser)
-			//if err != nil {
-			//	fmt.Println(" ERROR: Cannot Save Data: ", err)
-			//}
-			//fmt.Println("Đã Lưu Thành Công Và Thoát Chương Trình.")
-			//break
-
 			bs, err := json.Marshal(listUser)
 			err = os.WriteFile("meraki/data", bs, 0644)
 			if err != nil {
@@ -439,21 +428,21 @@ func addTokenIntoWallet() {
 	return
 }
 
-func read() ([]User, error) {
-
-	var listUser []User
-	dat, err := os.ReadFile("./data.json")
-	if err != nil {
-		return nil, err
-	}
-
-	err = json.Unmarshal(dat, &listUser)
-	if err != nil {
-		return nil, err
-	}
-
-	return listUser, nil
-}
+//func read() ([]User, error) {
+//
+//	var listUser []User
+//	dat, err := os.ReadFile("./data.json")
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	err = json.Unmarshal(dat, &listUser)
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	return listUser, nil
+//}
 
 //func save(data []User) error {
 //	tmp, err := json.Marshal(data)
