@@ -44,16 +44,16 @@ func getInput(prompt string, r *bufio.Reader) (string, error) {
 // ----------------- khai báo Struct ----------------------
 
 type User struct {
-	email   string   `json:"email"`
-	wallets []Wallet `json:"wallets"`
+	Email   string   `json:"email"`
+	Wallets []Wallet `json:"wallets"`
 }
 type Wallet struct {
-	address string  `json:"address"`
-	tokens  []Token `json:"tokens"`
+	Address string  `json:"address"`
+	Tokens  []Token `json:"tokens"`
 }
 type Token struct {
-	symbol  string  `json:"Symbol"`
-	balance float64 `json:"Balance"`
+	Symbol  string  `json:"Symbol"`
+	Balance float64 `json:"Balance"`
 }
 
 var listUser []User
@@ -77,12 +77,21 @@ func MenuChinh() {
 			SignIn()
 			break
 		case "3":
-			fmt.Println("Lưu Thành Công ... Thoát Chương Trình.")
-			err := save(listUser)
+			//fmt.Println("Lưu Thành Công ... Thoát Chương Trình.")
+			//err := save(listUser)
+			//if err != nil {
+			//	fmt.Println(" ERROR: Cannot Save Data: ", err)
+			//}
+			//fmt.Println("Đã Lưu Thành Công Và Thoát Chương Trình.")
+			//break
+
+			bs, err := json.Marshal(listUser)
+			err = os.WriteFile("meraki/data", bs, 0644)
 			if err != nil {
-				fmt.Println(" ERROR: cannot save data: ", err)
+				fmt.Println(err)
 			}
-			break
+			fmt.Println("Đã Lưu Thành Công Và Thoát Chương Trình.")
+
 		default:
 			fmt.Println("Lựa chọn đó không có - Hãy Chọn Lại.")
 			fmt.Println(".............................")
@@ -152,7 +161,7 @@ func SignUp() {
 			if err != nil {
 				fmt.Println("error")
 			}
-			listToken = append(listToken, Token{symbol: symbol, balance: b})
+			listToken = append(listToken, Token{Symbol: symbol, Balance: b})
 		} else if tokenmenu == "2" {
 			fmt.Println("Thoát")
 			break
@@ -162,12 +171,12 @@ func SignUp() {
 		}
 	}
 	var initWallet = Wallet{
-		address: uuid.NewString(),
-		tokens:  listToken,
+		Address: uuid.NewString(),
+		Tokens:  listToken,
 	}
 	listUser = append(listUser, User{
-		email:   email,
-		wallets: []Wallet{initWallet},
+		Email:   email,
+		Wallets: []Wallet{initWallet},
 	})
 	fmt.Println(listUser)
 	MenuChinh()
@@ -182,7 +191,7 @@ func validFormEmail(email string) bool {
 // ----------------- CheckEmailExist ----------------------
 func checkEmailExist(email string, listUsers []User) bool {
 	for _, user := range listUsers {
-		if email == user.email {
+		if email == user.Email {
 			return false
 		}
 	}
@@ -202,7 +211,7 @@ func SignIn() {
 	isLogin := false
 	currentUserIndex := -1
 	for index, user := range listUser {
-		if email == user.email {
+		if email == user.Email {
 			fmt.Println("Đăng Nhập Thành Công.")
 			currentUserIndex = index
 			fmt.Println("Index của ban là: ", currentUserIndex)
@@ -223,12 +232,12 @@ func SignIn() {
 
 func ThongTinUser(user User) {
 	fmt.Println("Thông Tin Của User: ")
-	fmt.Println("- Email: ", user.email)
-	for _, wallet := range user.wallets {
-		fmt.Println("- Address: ", wallet.address)
-		for _, token := range wallet.tokens {
-			fmt.Println("  - Symbol: ", token.symbol)
-			fmt.Println("  - Balance: ", token.balance)
+	fmt.Println("- Email: ", user.Email)
+	for _, wallet := range user.Wallets {
+		fmt.Println("- Address: ", wallet.Address)
+		for _, token := range wallet.Tokens {
+			fmt.Println("  - Symbol: ", token.Symbol)
+			fmt.Println("  - Balance: ", token.Balance)
 		}
 	}
 }
@@ -246,7 +255,7 @@ func addWallet() {
 	isLogin := false
 	currentUserIndex := -1
 	for index, user := range listUser {
-		if email == user.email {
+		if email == user.Email {
 			currentUserIndex = index
 			isLogin = true
 			break
@@ -267,7 +276,7 @@ func addWallet() {
 			if err != nil {
 				fmt.Println("error")
 			}
-			listToken = append(listToken, Token{symbol: symbol, balance: b})
+			listToken = append(listToken, Token{Symbol: symbol, Balance: b})
 		} else if quest == "2" {
 			fmt.Println("Thoát")
 			break
@@ -278,10 +287,10 @@ func addWallet() {
 	}
 
 	newWallet := Wallet{
-		address: uuid.NewString(),
-		tokens:  listToken,
+		Address: uuid.NewString(),
+		Tokens:  listToken,
 	}
-	listUser[currentUserIndex].wallets = append(listUser[currentUserIndex].wallets, newWallet)
+	listUser[currentUserIndex].Wallets = append(listUser[currentUserIndex].Wallets, newWallet)
 	fmt.Println("Bạn Đã Tạo Ví Mới Thành Công!")
 	ThongTinUser(listUser[currentUserIndex])
 }
@@ -298,7 +307,7 @@ func deleteWallet() {
 	isLogin := false
 	currentUserIndex := -1
 	for index, user := range listUser {
-		if email == user.email {
+		if email == user.Email {
 			currentUserIndex = index
 			isLogin = true
 			ThongTinUser(listUser[currentUserIndex])
@@ -311,9 +320,9 @@ func deleteWallet() {
 	}
 	quest, _ := getInput("Nhập Địa Chỉ Ví Muốn Xoá: ", reader)
 	isDetele := false
-	for i, wallet := range listUser[currentUserIndex].wallets {
-		if quest == wallet.address {
-			listUser[currentUserIndex].wallets = append(listUser[currentUserIndex].wallets[:i], listUser[currentUserIndex].wallets[i+1:]...)
+	for i, wallet := range listUser[currentUserIndex].Wallets {
+		if quest == wallet.Address {
+			listUser[currentUserIndex].Wallets = append(listUser[currentUserIndex].Wallets[:i], listUser[currentUserIndex].Wallets[i+1:]...)
 			isDetele = true
 			break
 		}
@@ -340,7 +349,7 @@ func changeEmail() {
 	isLogin := false
 	currentUserIndex := -1
 	for index, user := range listUser {
-		if email == user.email {
+		if email == user.Email {
 			currentUserIndex = index
 			isLogin = true
 			ThongTinUser(listUser[currentUserIndex])
@@ -356,7 +365,7 @@ func changeEmail() {
 		if !checkEmailExist(quest, listUser) {
 			fmt.Println("Tài Khoản Này Đã Được Tạo Rồi. Hãy Su Dung Email khac.")
 		} else {
-			listUser[currentUserIndex].email = quest
+			listUser[currentUserIndex].Email = quest
 			fmt.Println("Bạn Đã Đổi Email Thành: ", quest)
 			ThongTinUser(listUser[currentUserIndex])
 			break
@@ -378,7 +387,7 @@ func addTokenIntoWallet() {
 	isLogin := false
 	currentUserIndex := -1
 	for index, user := range listUser {
-		if email == user.email {
+		if email == user.Email {
 			currentUserIndex = index
 			isLogin = true
 			ThongTinUser(listUser[currentUserIndex])
@@ -391,8 +400,8 @@ func addTokenIntoWallet() {
 	}
 	quest, _ := getInput("Ban them token vao xoa address nao?: ", reader)
 	isFindAddress := false
-	for i, wallet := range listUser[currentUserIndex].wallets {
-		if quest == wallet.address {
+	for i, wallet := range listUser[currentUserIndex].Wallets {
+		if quest == wallet.Address {
 			// bat dau nhap token
 			var listToken []Token
 			for {
@@ -404,7 +413,7 @@ func addTokenIntoWallet() {
 					if err != nil {
 						fmt.Println("error")
 					}
-					listToken = append(listToken, Token{symbol: symbol, balance: b})
+					listToken = append(listToken, Token{Symbol: symbol, Balance: b})
 				}
 				if quest == "2" {
 					isFindAddress = true
@@ -413,11 +422,11 @@ func addTokenIntoWallet() {
 			}
 			// append token vao day
 			newWallet := Wallet{
-				address: wallet.address,
-				tokens:  listToken,
+				Address: wallet.Address,
+				Tokens:  listToken,
 			}
-			listUser[currentUserIndex].wallets = append(listUser[currentUserIndex].wallets, newWallet)
-			listUser[currentUserIndex].wallets = append(listUser[currentUserIndex].wallets[:i], listUser[currentUserIndex].wallets[i+1:]...)
+			listUser[currentUserIndex].Wallets = append(listUser[currentUserIndex].Wallets, newWallet)
+			listUser[currentUserIndex].Wallets = append(listUser[currentUserIndex].Wallets[:i], listUser[currentUserIndex].Wallets[i+1:]...)
 			// ket thuc nhap token
 		}
 	}
@@ -446,16 +455,18 @@ func read() ([]User, error) {
 	return listUser, nil
 }
 
-func save(data []User) error {
-	tmp, err := json.Marshal(data)
-	if err != nil {
-		return err
-	}
+//func save(data []User) error {
+//	tmp, err := json.Marshal(data)
+//	if err != nil {
+//		return err
+//	}
+//
+//	err = os.WriteFile("./data.json", tmp, 0644)
+//	if err != nil {
+//		return err
+//	}
+//
+//	return nil
+//}
 
-	err = os.WriteFile("./data.json", tmp, 0644)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
+// ----------------- Save.Json.File ----------------------
