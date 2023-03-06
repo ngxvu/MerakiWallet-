@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"net/mail"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -21,6 +22,7 @@ func main() {
 	err = json.Unmarshal(bs, &listUser)
 	Welcome()
 	MenuChinh()
+
 }
 
 // ----------------- func welcome ----------------------
@@ -53,18 +55,40 @@ type Token struct {
 	Balance float64 `json:"Balance"`
 }
 
+// TODO:
+// ----------------- StarSortByEmail ----------------------
+
+func (u User) String() string {
+	return fmt.Sprintf("%s: %v", u.Email, u.Wallets)
+}
+
+type ByEmail []User
+
+func (a ByEmail) Len() int           { return len(a) }
+func (a ByEmail) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ByEmail) Less(i, j int) bool { return a[i].Email < a[j].Email }
+
+// ----------------- EndSortByEmail ----------------------
 var listUser []User
 
 // ----------------- MenuChinh ----------------------
 
 func MenuChinh() {
+
 	reader := bufio.NewReader(os.Stdin)
 	for {
-		opt, _ := getInput("\nLựa Chọn Chức Năng Ví.\n   0 - Xem list User\n   1 - Tạo Tài Khoản.\n   2 - Đăng Nhập Tài Khoản.\n   3 - Lưu Và Thoát Chương Trình.", reader)
+		opt, _ := getInput("\nLựa Chọn Chức Năng Ví.\n   0 - Xem List User\n   1 - Tạo Tài Khoản.\n   2 - Đăng Nhập Tài Khoản.\n   3 - Lưu Và Thoát Chương Trình.", reader)
 		switch opt {
 		case "0":
 			fmt.Println(listUser)
-			continue
+			for {
+				opt, _ := getInput("Lựa Chọn Chức Năng: \n   1 - Sắp Xếp Theo Tên Email Đăng Nhập.\n   2 - Sắp Xếp Theo Số Dư.\n   3 - Về Lại Menu Chính. ", reader)
+				switch opt {
+				case "1":
+					sort.Sort(ByEmail(listUser))
+					fmt.Println(listUser)
+				}
+			}
 		case "1":
 			fmt.Println("Bạn Chọn Tạo Tài Khoản.")
 			SignUp()
@@ -80,7 +104,7 @@ func MenuChinh() {
 				fmt.Println(err)
 			}
 			fmt.Println("Đã Lưu Thành Công Và Thoát Chương Trình.")
-
+			break
 		default:
 			fmt.Println("Lựa chọn đó không có - Hãy Chọn Lại.")
 			fmt.Println(".............................")
