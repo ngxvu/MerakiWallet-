@@ -55,8 +55,19 @@ type Token struct {
 	Balance float64 `json:"Balance"`
 }
 
-// TODO:
-// ----------------- StarSortByEmail ----------------------
+// ----------------- Started Gán Giá Trị Cho Token ----------------------
+var priceTag = map[string]float64{
+	"BTC":  22.16,
+	"ETH":  1.57,
+	"ADA":  0.000332910,
+	"NEAR": 0.157,
+	"CLV":  0.05,
+	"CAKE": 0.02,
+}
+
+// ----------------- Ended Gán Giá Trị Cho Token ----------------------
+
+// ----------------- StartedSortByEmail ----------------------
 
 func (u User) String() string {
 	return fmt.Sprintf("%s: %v", u.Email, u.Wallets)
@@ -68,7 +79,8 @@ func (a ByEmail) Len() int           { return len(a) }
 func (a ByEmail) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByEmail) Less(i, j int) bool { return a[i].Email < a[j].Email }
 
-// ----------------- EndSortByEmail ----------------------
+//----------------- EndedSortByEmail ----------------------
+
 var listUser []User
 
 // ----------------- MenuChinh ----------------------
@@ -82,13 +94,34 @@ func MenuChinh() {
 		case "0":
 			fmt.Println(listUser)
 			for {
-				opt, _ := getInput("Lựa Chọn Chức Năng: \n   1 - Sắp Xếp Theo Tên Email Đăng Nhập.\n   2 - Sắp Xếp Theo Số Dư.\n   3 - Về Lại Menu Chính. ", reader)
+				opt, _ := getInput("Lựa Chọn Chức Năng: \n   1 - Sắp Xếp Theo Tên Email Đăng Nhập.\n   2 - Sắp Xếp Wallet Theo Tứ Tự Giảm Dần Tổng Số Balance.\n   3 - Sắp Xếp Wallet Theo Tứ Tự Giảm Dần Tổng Số Balance.\n   4 - Sắp Xếp Wallet Theo Tứ Tự Tăng Dần Tổng Số Balance.\n   5 - Thoát Và Quay Về Menu Chính.", reader)
 				switch opt {
 				case "1":
 					sort.Sort(ByEmail(listUser))
+					for _, v := range listUser {
+						fmt.Println("-", v)
+					}
+					continue
+				case "2":
 					fmt.Println(listUser)
+					continue
+				case "3":
+
+					fmt.Println(listUser)
+					continue
+
+				case "5":
+					fmt.Println("Bạn Chọn Quay Về Menu Chính. ")
+					MenuChinh()
+					break
+				default:
+					fmt.Println("Lựa chọn đó không có - Hãy Chọn Lại.")
+					fmt.Println(".............................")
+					continue
 				}
+				break
 			}
+
 		case "1":
 			fmt.Println("Bạn Chọn Tạo Tài Khoản.")
 			SignUp()
