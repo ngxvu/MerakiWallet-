@@ -92,9 +92,11 @@ func MenuChinh() {
 		opt, _ := getInput("\nLựa Chọn Chức Năng Ví.\n   0 - Xem List User\n   1 - Tạo Tài Khoản.\n   2 - Đăng Nhập Tài Khoản.\n   3 - Lưu Và Thoát Chương Trình.", reader)
 		switch opt {
 		case "0":
-			fmt.Println(listUser)
+			for _, v := range listUser {
+				fmt.Println("-", v)
+			}
 			for {
-				opt, _ := getInput("Lựa Chọn Chức Năng: \n   1 - Sắp Xếp Theo Tên Email Đăng Nhập.\n   2 - Sắp Xếp Wallet Theo Tứ Tự Giảm Dần Tổng Số Balance.\n   3 - Sắp Xếp Wallet Theo Tứ Tự Giảm Dần Tổng Số Balance.\n   4 - Sắp Xếp Wallet Theo Tứ Tự Tăng Dần Tổng Số Balance.\n   5 - Thoát Và Quay Về Menu Chính.", reader)
+				opt, _ := getInput("Lựa Chọn Chức Năng: \n   1 - Sắp Xếp Theo Tên Email Đăng Nhập.\n   2 - Sắp Xếp Wallet Theo Tứ Tự Giảm Dần Tổng Số Balance.\n   3 - Sắp Xếp Wallet Theo Tứ Tự Tăng Dần Tổng Số Balance.\n   4 - Thoát Và Quay Về Menu Chính.", reader)
 				switch opt {
 				case "1":
 					sort.Sort(ByEmail(listUser))
@@ -103,14 +105,47 @@ func MenuChinh() {
 					}
 					continue
 				case "2":
-					fmt.Println(listUser)
-					continue
+					reader := bufio.NewReader(os.Stdin)
+					email, _ := getInput("Nhập Lại Email Của Bạn: ", reader)
+					if !validFormEmail(email) {
+						fmt.Println("Sai Định Dạng Email.")
+						continue
+					}
+					isLogin := false
+					currentUserIndex := -1
+					for index, user := range listUser {
+						if email == user.Email {
+							currentUserIndex = index
+							isLogin = true
+							break
+						}
+					}
+					if isLogin == false {
+						fmt.Println("Đăng Nhập Thất Bại Vì Tài Khoản Chưa Được Khởi Tạo.\nMời Bạn Tạo Tài Khoản Mới.")
+						return
+					}
+					sort.Slice(listUser[currentUserIndex].Wallets, func(i, j int) bool {
+						totalBalanceI := 0.0
+						for _, token := range listUser[currentUserIndex].Wallets[i].Tokens {
+							// quy doi ra usd
+							usdPrice := token.Balance * priceTag[token.Symbol]
+							totalBalanceI += usdPrice
+						}
+						totalBalanceJ := 0.0
+						for _, token := range listUser[currentUserIndex].Wallets[j].Tokens {
+							usdPrice := token.Balance * priceTag[token.Symbol]
+							totalBalanceJ += usdPrice
+						}
+						return totalBalanceI > totalBalanceJ
+					})
+					ThongTinUser(listUser[currentUserIndex], priceTag)
+
 				case "3":
 
 					fmt.Println(listUser)
 					continue
 
-				case "5":
+				case "4":
 					fmt.Println("Bạn Chọn Quay Về Menu Chính. ")
 					MenuChinh()
 					break
@@ -193,10 +228,13 @@ func SignUp() {
 	if !validFormEmail(email) {
 		fmt.Println("Sai Định Dạng Email - Hãy Nhập Lại.")
 		SignUp()
+		return
 	} else if !checkEmailExist(email, listUser) {
 		fmt.Println("Tài Khoản Này Đã Được Tạo Rồi. Hãy Đăng Nhập.")
 		MenuChinh()
+		return
 	}
+
 	var listToken []Token
 	for {
 		tokenmenu, _ := getInput("1-Nhập Token\n2-Thoát", reader)
@@ -262,7 +300,7 @@ func SignIn() {
 			currentUserIndex = index
 			fmt.Println("Index của ban là: ", currentUserIndex)
 			isLogin = true
-			ThongTinUser(user)
+			ThongTinUser(user, map[string]float64{})
 			MenuUser()
 			break
 		}
@@ -276,15 +314,18 @@ func SignIn() {
 
 // ----------------- ThongTinUser ----------------------
 
-func ThongTinUser(user User) {
+func ThongTinUser(user User, priceTag map[string]float64) {
 	fmt.Println("Thông Tin Của User: ")
 	fmt.Println("- Email: ", user.Email)
 	for _, wallet := range user.Wallets {
 		fmt.Println("- Address: ", wallet.Address)
+		totalBalance := 0.0
 		for _, token := range wallet.Tokens {
+			totalBalance += token.Balance * priceTag[token.Symbol]
 			fmt.Println("  - Symbol: ", token.Symbol)
 			fmt.Println("  - Balance: ", token.Balance)
 		}
+		fmt.Println("\tTong Balance: ", totalBalance)
 	}
 }
 
@@ -323,9 +364,11 @@ func addWallet() {
 				fmt.Println("error")
 			}
 			listToken = append(listToken, Token{Symbol: symbol, Balance: b})
+
 		} else if quest == "2" {
 			fmt.Println("Thoát")
 			break
+			MenuChinh()
 		} else {
 			fmt.Println("Lựa chọn đó không có - Hãy Chọn Lại.")
 			continue
@@ -338,7 +381,7 @@ func addWallet() {
 	}
 	listUser[currentUserIndex].Wallets = append(listUser[currentUserIndex].Wallets, newWallet)
 	fmt.Println("Bạn Đã Tạo Ví Mới Thành Công!")
-	ThongTinUser(listUser[currentUserIndex])
+	ThongTinUser(listUser[currentUserIndex], map[string]float64{})
 }
 
 // ----------------- DeleteWallet ----------------------
@@ -356,7 +399,7 @@ func deleteWallet() {
 		if email == user.Email {
 			currentUserIndex = index
 			isLogin = true
-			ThongTinUser(listUser[currentUserIndex])
+			ThongTinUser(listUser[currentUserIndex], map[string]float64{})
 			break
 		}
 	}
@@ -378,7 +421,7 @@ func deleteWallet() {
 		}
 	}
 	fmt.Println("Ban da xoa wallet: ", quest)
-	ThongTinUser(listUser[currentUserIndex])
+	ThongTinUser(listUser[currentUserIndex], map[string]float64{})
 	MenuUser()
 	return
 }
@@ -398,7 +441,7 @@ func changeEmail() {
 		if email == user.Email {
 			currentUserIndex = index
 			isLogin = true
-			ThongTinUser(listUser[currentUserIndex])
+			ThongTinUser(listUser[currentUserIndex], map[string]float64{})
 			break
 		}
 	}
@@ -413,7 +456,7 @@ func changeEmail() {
 		} else {
 			listUser[currentUserIndex].Email = quest
 			fmt.Println("Bạn Đã Đổi Email Thành: ", quest)
-			ThongTinUser(listUser[currentUserIndex])
+			ThongTinUser(listUser[currentUserIndex], map[string]float64{})
 			break
 		}
 	}
@@ -436,7 +479,7 @@ func addTokenIntoWallet() {
 		if email == user.Email {
 			currentUserIndex = index
 			isLogin = true
-			ThongTinUser(listUser[currentUserIndex])
+			ThongTinUser(listUser[currentUserIndex], map[string]float64{})
 			break
 		}
 	}
@@ -480,7 +523,7 @@ func addTokenIntoWallet() {
 		fmt.Println("Khong tim thay dia chi")
 		return
 	}
-	ThongTinUser(listUser[currentUserIndex])
+	ThongTinUser(listUser[currentUserIndex], map[string]float64{})
 	MenuUser()
 	return
 }
